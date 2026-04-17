@@ -12,55 +12,62 @@ Predict loan default risk with a focus on **model stability over time**. The eva
 
 - **Private LB Rank:** 147th of 3,856 teams
 - **Medal:** Silver
-- **Approach:** ensemble of time-aware models (LightGBM, LightAutoML, H2O AutoML) trained with unbalanced sampling and week-based validation
+- **Approach:** ensemble of time-aware models (LightGBM, LightAutoML, H2O AutoML) built on a shared utility pipeline
 
 ## Repository Structure
 
 ```
 home-credit-risk-stability-silver/
 ├── README.md
+├── LICENSE
 ├── requirements.txt
 ├── .gitignore
-├── notebooks/
-│   ├── 01_data_prep.ipynb               
-│   ├── 02_lightgbm_unbalanced.ipynb      
-│   ├── 03_lightgbm_inference.ipynb       
-│   ├── 04_lightautoml_cv5.ipynb           
-│   ├── 05_lightautoml_single.ipynb        
-│   ├── 06_lightautoml_inference.ipynb     
-│   ├── 07_h2o_automl_train.ipynb          
-│   └── 08_h2o_automl_submit.ipynb         
-└── src/                                   # (recommended) converted .py versions for reproducibility
-    ├── data_prep.py
-    ├── train_lgbm.py
-    ├── train_lightautoml.py
-    └── train_h2o.py
+├── src/
+│   ├── utils.py                     # shared functions (from homecreditutility-v5.ipynb)
+│   ├── data_prep.py                 # data aggregation pipeline
+│   ├── train_lgbm.py                # LightGBM unbalanced ensemble
+│   ├── inference_lgbm.py
+│   ├── train_lightautoml.py         # LightAutoML CV5
+│   ├── inference_lightautoml.py
+│   ├── train_h2o.py                 # H2O AutoML
+│   └── inference_h2o.py
+└── notebooks/
+    ├── 00_utils.ipynb               # homecreditutility-v5.ipynb (reference)
+    ├── 01_data_prep.ipynb
+    ├── 02_lgbm_unbalanced_ensemble.ipynb
+    ├── 03_lgbm_inference.ipynb
+    ├── 04_lightautoml_cv5.ipynb
+    ├── 05_lightautoml_single.ipynb
+    ├── 06_lightautoml_inference.ipynb
+    ├── 07_h2o_automl_train.ipynb
+    └── 08_h2o_automl_submit.ipynb
 ```
 
-Rename your original notebooks as shown for clarity. The `src/` folder is optional but recommended for clean imports and Kaggle re-runs.
+## Key Components
 
-## Approaches Explored
+### `src/utils.py`
+Central utility module converted from `homecreditutility-v5.ipynb`. It provides:
+- Memory-efficient parquet loading with Polars/pandas
+- Aggregation helpers for auxiliary tables (bureau, previous, installments)
+- Time-based validation split by `WEEK_NUM`
+- Feature downcasting and categorical handling
+- Common evaluation function for stability metric
 
-1. **LightGBM Unbalanced Ensemble**
-   - File: `02_lightgbm_unbalanced.ipynb`
-   - Handles class imbalance via custom sampling
-   - Time-based validation using WEEK_NUM to mirror stability metric
-   - Ensemble of folds for reduced variance
+All training scripts import from `utils.py` to ensure consistent preprocessing — critical for stability.
 
-2. **LightAutoML (CV5)**
-   - Files: `04_lightautoml_cv5.ipynb`, `05_lightautoml_single.ipynb`
-   - Automated feature selection and stacking
-   - 5-fold time-aware CV; inference notebook generates out-of-fold stability scores
+### Approaches
 
-3. **H2O AutoML**
-   - Files: `07_h2o_automl_train.ipynb`, `08_h2o_automl_submit.ipynb`
-   - Baseline automl with leaderboard models (GBM, XGBoost, DeepLearning)
-   - Used for diversity in final ensemble
+1. **LightGBM Unbalanced Ensemble** (`train_lgbm.py`)
+   - Uses utils for time-aware splits
+   - Class imbalance handling via custom sampling
+   - Ensemble of folds
 
-4. **Data Preparation**
-   - File: `01_data_prep.ipynb`
-   - Aggregates auxiliary tables (bureau, previous applications, installments) to case_id level
-   - Memory optimization with categorical downcasting
+2. **LightAutoML** (`train_lightautoml.py`)
+   - Automated feature selection built on utils-processed data
+   - 5-fold CV aligned to weeks
+
+3. **H2O AutoML** (`train_h2o.py`)
+   - Diversity model trained on same features from utils
 
 ## Installation
 
@@ -70,34 +77,15 @@ cd home-credit-risk-stability-silver
 pip install -r requirements.txt
 ```
 
-Core dependencies: `lightgbm>=4.0`, `lightautoml`, `h2o`, `pandas`, `polars`, `scikit-learn`, `numpy`
+## Reproducibility
 
-## How to Reproduce
+1. Download competition data to `data/` (not tracked)
+2. Run `python src/data_prep.py` or notebook 01
+3. Train: `python src/train_lgbm.py`
+4. Inference scripts generate submissions
 
-1. Download data from Kaggle competition page into `data/` (not tracked)
-2. Run data prep notebook first
-3. Train models in order: LightGBM → LightAutoML → H2O
-4. Use inference notebooks to generate test predictions
-5. Ensemble predictions (simple weighted average worked best for stability)
-
-## Key Learnings
-
-- Week-based splits predicted LB stability far better than random KFold
-- Unbalanced sampling improved recall on late weeks without hurting early performance
-- Simple aggregations (mean, max, last) were more stable than high-cardinality interactions
-- Ensembling diverse frameworks (tree + automl) reduced week-to-week variance
-
-## Recommendations for Cleanup
-
-- Clear notebook outputs before committing (`Kernel → Restart & Clear Output`)
-- Convert stable notebooks to `.py` with `jupyter nbconvert --to script`
-- Add `.gitignore` for `data/`, `models/`, `.ipynb_checkpoints/`
-- Pin versions in `requirements.txt`
+Notebooks are stored with outputs cleared. For rendered versions, see the Kaggle discussion or run locally.
 
 ## License
 
-MIT
-
-## Acknowledgements
-
-Home Credit and Kaggle for the dataset and stability-focused evaluation.
+MIT — see LICENSE file
