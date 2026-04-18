@@ -1,6 +1,6 @@
 # Home Credit – Credit Risk Model Stability
 
-**Kaggle Silver Medal — Rank 147 / 3,856 (Top 4%)**
+**![Kaggle Silver Medal](assets/kaggle-silver-certificate.png) — Rank 147 / 3,856 (Top 4%)**
 
 Code and experiments for the [Home Credit – Credit Risk Model Stability](https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability) competition.
 
@@ -12,7 +12,8 @@ Predict loan default risk with a focus on **model stability over time**. The eva
 
 - **Private LB Rank:** 147th of 3,856 teams
 - **Medal:** Silver
-- **Approach:** ensemble of time-aware models (LightGBM, LightAutoML, H2O AutoML) built on a shared utility pipeline
+- **Winning submission:** LightAutoML CV5 ensemble (`src/train_lightautoml.py`)
+  - Other approaches (LightGBM unbalanced, H2O AutoML) were developed for experimentation and diversity but the LightAutoML pipeline achieved the final silver score.
 
 ## Repository Structure
 
@@ -25,11 +26,11 @@ home-credit-risk-stability-silver/
 ├── src/
 │   ├── utils.py                     # shared functions (from homecreditutility-v5.ipynb)
 │   ├── data_prep.py                 # data aggregation pipeline
-│   ├── train_lgbm.py                # LightGBM unbalanced ensemble
+│   ├── train_lgbm.py                # experimental (LightGBM unbalanced ensemble)
 │   ├── inference_lgbm.py
-│   ├── train_lightautoml.py         # LightAutoML CV5
+│   ├── train_lightautoml.py         # ★ silver-medal model (LightAutoML CV5)
 │   ├── inference_lightautoml.py
-│   ├── train_h2o.py                 # H2O AutoML
+│   ├── train_h2o.py                 # experimental (H2O AutoML)
 │   └── inference_h2o.py
 └── notebooks/
     ├── 00_utils.ipynb               # homecreditutility-v5.ipynb (reference)
@@ -55,18 +56,23 @@ Central utility module converted from `homecreditutility-v5.ipynb`. It provides:
 
 All training scripts import from `utils.py` to ensure consistent preprocessing — critical for stability.
 
-### Approaches
+## Primary Approach: LightAutoML
+
+The silver-medal solution is a **time-aware LightAutoML pipeline**:
+
+- **File:** `notebooks/04_lightautoml_cv5.ipynb` → `src/train_lightautoml.py`
+- **Validation:** 5-fold split by `WEEK_NUM` to mimic the Gini stability metric
+- **Features:** aggregated features from `utils.py` (bureau, previous applications, installments)
+- **Why it worked:** LightAutoML's automatic feature selection combined with week-based CV reduced variance across time periods, directly optimizing for stability rather than peak AUC.
+
+## Other Approaches
 
 1. **LightGBM Unbalanced Ensemble** (`train_lgbm.py`)
    - Uses utils for time-aware splits
    - Class imbalance handling via custom sampling
    - Ensemble of folds
 
-2. **LightAutoML** (`train_lightautoml.py`)
-   - Automated feature selection built on utils-processed data
-   - 5-fold CV aligned to weeks
-
-3. **H2O AutoML** (`train_h2o.py`)
+2. **H2O AutoML** (`train_h2o.py`)
    - Diversity model trained on same features from utils
 
 ## Installation
@@ -76,15 +82,22 @@ git clone https://github.com/<your-username>/home-credit-risk-stability-silver.g
 cd home-credit-risk-stability-silver
 pip install -r requirements.txt
 ```
-
-## Reproducibility
+## Reproduce Silver Submission
 
 1. Download competition data to `data/` (not tracked)
-2. Run `python src/data_prep.py` or notebook 01
-3. Train: `python src/train_lgbm.py`
-4. Inference scripts generate submissions
+2. Run the following bash commands
+    ```bash
+    python src/data_prep.py
+    python src/train_lightautoml.py
+    python src/inference_lightautoml.py
+    ```
+3. Inference scripts generate submissions
 
 Notebooks are stored with outputs cleared. For rendered versions, see the Kaggle discussion or run locally.
+
+## Certificate
+
+The official Kaggle silver medal certificate is stored in `assets/kaggle-silver-certificate.png` and displayed at the top of this README.
 
 ## License
 
