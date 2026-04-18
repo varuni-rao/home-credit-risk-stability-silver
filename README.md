@@ -1,6 +1,7 @@
 # Home Credit – Credit Risk Model Stability
 
-**![Kaggle Silver Medal](assets/kaggle-silver-certificate.png) — Rank 147 / 3,856 (Top 4%)**
+**Kaggle Silver Medal — Rank 147 / 3,856 (Top 4%)**
+<div align = "left"><img src = "assets/kaggle-silver-certificate.png" desc = "Kaggle Silver Medal Certificate" height=300></div>
 
 Code and experiments for the [Home Credit – Credit Risk Model Stability](https://www.kaggle.com/competitions/home-credit-credit-risk-model-stability) competition.
 
