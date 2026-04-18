@@ -25,16 +25,17 @@ home-credit-risk-stability-silver/
 ├── requirements.txt
 ├── .gitignore
 ├── src/
-│   ├── utils.py                     # shared functions (from homecreditutility-v5.ipynb)
+│   ├── utils.py                     # shared functions
 │   ├── data_prep.py                 # data aggregation pipeline
-│   ├── train_lgbm.py                # experimental (LightGBM unbalanced ensemble)
-│   ├── inference_lgbm.py
 │   ├── train_lightautoml.py         # ★ silver-medal model (LightAutoML CV5)
-│   ├── inference_lightautoml.py
+│   └── inference_lightautoml.py
+├── experiments/
 │   ├── train_h2o.py                 # experimental (H2O AutoML)
-│   └── inference_h2o.py
+│   ├── inference_h2o.py
+│   ├── train_lgbm.py                # experimental (LightGBM unbalanced ensemble)
+│   └── inference_lgbm.py
 └── notebooks/
-    ├── 00_utils.ipynb               # homecreditutility-v5.ipynb (reference)
+    ├── 00_utils.ipynb              
     ├── 01_data_prep.ipynb
     ├── 02_lgbm_unbalanced_ensemble.ipynb
     ├── 03_lgbm_inference.ipynb
